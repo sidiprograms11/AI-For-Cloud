@@ -4,7 +4,7 @@ L’interface cible est construite avec React, TypeScript et Vite. Elle utiliser
 
 ## État
 
-Le shell Kora, le client API minimal et l’initialisation conditionnelle du client Supabase sont en place. Le parcours d’authentification, le questionnaire, le chat, la validation du besoin, l’affichage du dossier et l’export restent à développer.
+Un prototype visuel responsive présente quatre écrans : accueil, saisie du besoin, comparaison et dossier technique. Les boutons de navigation changent seulement l’écran affiché. Les champs sont illustratifs et ne sauvegardent rien. Les exemples et états sont explicitement fictifs. Le client API minimal et l’initialisation conditionnelle du client Supabase restent dans le code pour les développements suivants, mais la maquette ne les appelle pas. Le parcours d’authentification, le questionnaire fonctionnel, le chat, la validation du besoin, les résultats réels et l’export restent à développer.
 
 ## Développement
 

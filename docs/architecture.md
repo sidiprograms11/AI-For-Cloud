@@ -16,7 +16,7 @@ Le modèle de génération, le modèle d’embeddings, les versions exactes des 
 
 ## État du scaffold
 
-- L’interface React affiche le shell Kora, indique explicitement que les recommandations ne sont pas encore disponibles et signale l’état de l’API et la configuration Supabase.
+- L’interface React présente une maquette responsive de l’accueil, de la saisie, de la comparaison et du dossier. Les exemples sont fictifs ; la maquette n’appelle ni l’API ni Supabase.
 - FastAPI expose `GET /api/v1/health`. Les routes métier et la validation des jetons restent à développer.
 - L’interface et le backend disposent d’un emplacement pour le client Supabase. Aucun accès distant n’est configuré.
 - `supabase/config.toml` décrit le développement local ; la migration initiale crée les tables, active RLS, installe pgvector et rend les buckets privés.

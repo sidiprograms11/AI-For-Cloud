@@ -10,7 +10,7 @@ Le modèle de génération, le modèle d’embeddings, les seuils de budget, la 
 
 ## État de l’application
 
-L’interface est un shell de démarrage, l’API expose un contrôle de santé et le fournisseur IA simulé est marqué comme tel. La migration établit le schéma de données initial, l’extension pgvector et les politiques RLS. Le questionnaire, les conversations, l’authentification complète, le RAG, le moteur de comparaison et les recommandations réelles restent à développer.
+L’interface comporte un **premier prototype visuel** responsive : vue d’ensemble, écran de saisie, comparaison des trois fournisseurs et structure d’un dossier technique. La navigation entre ces écrans sert à explorer la maquette. Les exemples sont fictifs ; aucune donnée n’est envoyée ou enregistrée, aucune comparaison ni recommandation n’est calculée. L’API expose séparément un contrôle de santé et le fournisseur IA simulé est marqué comme tel. La migration établit le schéma de données initial, l’extension pgvector et les politiques RLS. Les fonctionnalités métier, l’authentification complète, le RAG et la génération réelle restent à développer.
 
 ## Prérequis
 
