@@ -1,0 +1,1 @@
+"""Adaptateurs IA remplaçables."""

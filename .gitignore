@@ -1,0 +1,50 @@
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Systèmes et éditeurs
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# JavaScript / TypeScript
+node_modules/
+.next/
+coverage/
+frontend/dist/
+frontend/.vite/
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Journaux, temporaires et artefacts locaux
+*.log
+*.tmp
+*.temp
+.cache/
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+crash.log

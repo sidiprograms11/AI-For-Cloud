@@ -1,51 +1,66 @@
 # AI for Cloud
 
-AI for Cloud est un projet de fin d’études mené par cinq élèves ingénieurs de dernière année à l’Efrei, en spécialisation CSIG (cybersécurité, systèmes d’information et gouvernance). L’objectif est de concevoir un prototype d’assistant intelligent qui aide les entreprises, notamment les PME, à formaliser leurs besoins et à prendre des décisions cloud compréhensibles et vérifiables.
+AI for Cloud est un projet de fin d’études réalisé par cinq élèves ingénieurs de dernière année à l’Efrei, en spécialisation CSIG. Le prototype, dont le nom de produit est **Kora**, doit aider les entreprises à formaliser leurs besoins et à comparer des architectures chez AWS, Microsoft Azure et Google Cloud.
 
-## Problème et objectifs
+## Socle technique
 
-Choisir des services cloud suppose de considérer ensemble les usages, les contraintes techniques et organisationnelles, les coûts, les données, la sécurité et les compétences disponibles. L’assistant devra structurer ces informations, rendre visibles les inconnues, comparer des solutions pertinentes chez AWS, Microsoft Azure et Google Cloud, puis expliquer une proposition d’architecture et ses compromis.
+Le dépôt suit le socle d’architecture commun fourni par l’équipe : React, TypeScript et Vite pour l’interface ; Python et FastAPI pour l’API ; Supabase avec PostgreSQL pour les données ; Supabase Auth et Storage ; pgvector pour les embeddings. Les appels IA passent par des adaptateurs. Le mode par défaut est simulé.
 
-Le système devra s’appuyer sur des critères explicites et des sources vérifiables. Une réponse de modèle de langage ne constitue pas une preuve. Aucun fournisseur n’est considéré comme meilleur par défaut. Le choix du modèle d’IA, du cloud recommandé à une entreprise et de l’hébergement de notre propre application sont trois décisions distinctes.
+Le modèle de génération, le modèle d’embeddings, les seuils de budget, la conservation des données, les versions exactes des outils et l’hébergement restent à choisir. Le projet Supabase présenté par l’équipe est en région `eu-west-1` ; le dépôt est configuré pour un développement local et ne se connecte pas automatiquement au projet hébergé.
 
-## Parcours cible
+## État de l’application
 
-1. L’entreprise décrit son contexte et son projet par questionnaire ou texte libre.
-2. L’assistant repère les informations manquantes et demande des précisions.
-3. L’utilisateur consulte et corrige la synthèse de son besoin.
-4. Le système compare les options pertinentes des trois fournisseurs.
-5. L’assistant présente une architecture expliquée, ses hypothèses, ses risques et ses alternatives.
-6. L’utilisateur consulte et peut exporter un dossier technique.
+L’interface est un shell de démarrage, l’API expose un contrôle de santé et le fournisseur IA simulé est marqué comme tel. La migration établit le schéma de données initial, l’extension pgvector et les politiques RLS. Le questionnaire, les conversations, l’authentification complète, le RAG, le moteur de comparaison et les recommandations réelles restent à développer.
 
-Ce parcours est un objectif à développer ; aucune de ces fonctionnalités n’est encore implémentée dans cette initialisation.
+## Prérequis
 
-## État initial
+- Node.js 22.12 ou supérieur pour Vite.
+- Python 3.12 ou supérieur.
+- Docker Desktop et Supabase CLI pour lancer la pile Supabase locale.
 
-Le dépôt contient la documentation de cadrage et des espaces réservés pour les futurs composants. Les technologies, le modèle, le corpus documentaire, les critères de comparaison et l’hébergement restent à étudier et à décider. Python/FastAPI, React, PostgreSQL et une approche RAG sont des pistes, pas des choix validés. Aucun déploiement ni service cloud n’est configuré.
+Les versions exactes et lockfiles seront alignés par l’équipe avant les développements fonctionnels.
 
-## Structure du dépôt
+## Démarrage local
+
+1. Copier `.env.example` vers `.env` à la racine. Les valeurs sont des exemples locaux, pas des identifiants du projet hébergé.
+2. Dans un terminal, depuis la racine, installer les dépendances frontend et lancer Vite :
+
+   ```powershell
+   Set-Location frontend
+   npm install
+   npm run dev
+   ```
+
+3. Dans un second terminal, depuis la racine, installer et lancer l’API :
+
+   ```powershell
+   py -3.12 -m venv backend/.venv
+   backend/.venv/Scripts/python -m pip install -e 'backend[dev]'
+   backend/.venv/Scripts/python -m uvicorn app.main:app --app-dir backend --reload
+   ```
+
+4. Pour lancer Supabase localement, avec Docker actif :
+
+   ```powershell
+   supabase start
+   supabase db reset
+   ```
+
+Les clés locales affichées par `supabase start` peuvent être ajoutées à `.env`. Le mode IA reste simulé par défaut. Aucun appel payant ni accès au projet Supabase hébergé n’est configuré.
+
+## Structure
 
 ```text
-.
-├── AGENTS.md
-├── CONTRIBUTING.md
-├── .env.example
-├── docs/                 # Cadrage, périmètre, architecture, recherche et backlog
-│   └── decisions/        # Décisions techniques à documenter
-├── frontend/             # Espace prévu pour l’interface Web
-├── backend/              # Espace prévu pour l’API et l’orchestration
-├── knowledge/            # Espace prévu pour le corpus et la recherche documentaire
-├── tests/                # Espace prévu pour les vérifications automatisées
-└── infra/                # Espace prévu pour la configuration de déploiement
+frontend/                 React, TypeScript, Vite et client Supabase
+backend/app/              API, schémas, services, dépôts et adaptateurs
+supabase/migrations/      Schéma PostgreSQL versionné, RLS et pgvector
+supabase/seed.sql         Point d’entrée pour fixtures fictives
+knowledge/                Inventaire et futurs scripts du corpus documentaire
+tests/                    Contrôles et scénarios communs
+docs/                     Cadrage, architecture, recherches et décisions
+infra/                    Périmètre de déploiement, hébergeur encore ouvert
 ```
 
-Les rôles prévus sont décrits dans les README de chaque dossier. Ils ne signalent pas que les composants existent déjà.
+## Contribution
 
-## Prochaines étapes
-
-- Valider le périmètre du prototype et les critères d’acceptation.
-- Étudier et documenter les choix techniques ouverts dans `docs/research.md` et `docs/decisions/`.
-- Découper le backlog en tâches vérifiables, sans affectation nominative à ce stade.
-- Une fois les décisions nécessaires prises, implémenter progressivement le parcours et ajouter les vérifications adaptées.
-
-Voir `docs/project-overview.md` pour le contexte détaillé, `docs/scope.md` pour le périmètre et `CONTRIBUTING.md` pour les règles de contribution.
+Travailler sur une branche par sujet, faire relire chaque pull request, versionner les migrations et ne jamais committer de secret. Lire `AGENTS.md`, `CONTRIBUTING.md` et `docs/architecture.md`. Les contributions préparées avec une IA doivent être comprises et vérifiées par l’équipe.

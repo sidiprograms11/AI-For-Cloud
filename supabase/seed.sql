@@ -1,0 +1,3 @@
+-- Aucune donnée réelle ou recommandation fictive n’est insérée à l’initialisation.
+-- Ajouter des fixtures déterministes ici lorsqu’un scénario de test commun sera défini.
+-- Toute fixture de catalogue devra être marquée comme telle et exclue des recommandations.
