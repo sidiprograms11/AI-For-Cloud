@@ -10,7 +10,12 @@ Le modèle de génération, le modèle d’embeddings, les seuils de budget, la 
 
 ## État de l’application
 
-L’interface comporte un **premier prototype visuel** responsive : vue d’ensemble, écran de saisie, comparaison des trois fournisseurs et structure d’un dossier technique. La navigation entre ces écrans sert à explorer la maquette. Les exemples sont fictifs ; aucune donnée n’est envoyée ou enregistrée, aucune comparaison ni recommandation n’est calculée. L’API expose séparément un contrôle de santé et le fournisseur IA simulé est marqué comme tel. La migration établit le schéma de données initial, l’extension pgvector et les politiques RLS. Les fonctionnalités métier, l’authentification complète, le RAG et la génération réelle restent à développer.
+Deux interfaces partagent le dépôt :
+
+- **Kora** (`/`) : expérience conversationnelle épurée avec les visuels fournis par l’équipe. Les messages et réponses de démonstration restent dans le navigateur. Aucune comparaison, recommandation réelle ou sauvegarde n’est effectuée.
+- **Console interne** (`/#/console`) : cinq espaces de travail. Le premier permet, sur la pile **Supabase locale**, de créer un cas, modifier ses contraintes, lancer un test explicitement simulé, demander une relecture, publier une version et revenir à une version publiée. L’API FastAPI contrôle Auth et les rôles à chaque route. Les quatre autres espaces sont marqués « À développer ».
+
+Le site public `ai-kora.cloud` héberge seulement le frontend statique ; la console fonctionnelle nécessite l’API et Supabase locaux. Le RAG, le LLM réel, les recommandations et les coûts calculés ne sont pas disponibles. Voir [le guide de la console locale](docs/console-locale.md).
 
 ## Prérequis
 
@@ -18,16 +23,16 @@ L’interface comporte un **premier prototype visuel** responsive : vue d’ense
 - Python 3.12 ou supérieur.
 - Docker Desktop et Supabase CLI pour lancer la pile Supabase locale.
 
-Les versions exactes et lockfiles seront alignés par l’équipe avant les développements fonctionnels.
+Le lockfile frontend est versionné. Les choix de modèles IA et d’hébergement du backend restent ouverts.
 
 ## Démarrage local
 
-1. Copier `.env.example` vers `.env` à la racine. Les valeurs sont des exemples locaux, pas des identifiants du projet hébergé.
+1. Copier `.env.example` vers `.env` à la racine. Reporter les clés de la pile Supabase locale après `supabase start` ; les valeurs de l’exemple ne sont pas des identifiants réels.
 2. Dans un terminal, depuis la racine, installer les dépendances frontend et lancer Vite :
 
    ```powershell
    Set-Location frontend
-   npm install
+   npm.cmd ci
    npm run dev
    ```
 
@@ -46,7 +51,7 @@ Les versions exactes et lockfiles seront alignés par l’équipe avant les dév
    supabase db reset
    ```
 
-Les clés locales affichées par `supabase start` peuvent être ajoutées à `.env`. Le mode IA reste simulé par défaut. Aucun appel payant ni accès au projet Supabase hébergé n’est configuré.
+Voir [la procédure détaillée](docs/console-locale.md) pour créer les comptes de test, attribuer les rôles locaux et vérifier le parcours. Aucun appel payant ni accès au projet Supabase hébergé n’est configuré.
 
 ## Structure
 

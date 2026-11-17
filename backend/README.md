@@ -13,6 +13,6 @@ L’API Python/FastAPI orchestre les opérations métier, vérifie l’identité
 
 ## État
 
-Le contrôle de santé `/api/v1/health`, la configuration par environnement et un adaptateur IA simulé sont en place. Les routes métier, la validation JWT, les dépôts Supabase, les quotas et les fournisseurs réels restent à développer. Le mode simulé produit uniquement un marqueur de simulation.
+Le contrôle de santé `/api/v1/health`, la configuration par environnement, les routes `/api/v1/internal/*` et un adaptateur IA simulé sont en place. Chaque route interne vérifie le jeton Supabase Auth et le rôle avant d’utiliser le client privilégié côté serveur. Le parcours des cas est implémenté pour la pile locale ; les tests enregistrés ne produisent que le marqueur de simulation, des hypothèses et des champs manquants. Les routes de recommandation utilisateur, les dépôts génériques, les quotas des futurs appels IA payants et les fournisseurs réels restent à développer.
 
-Lancer depuis la racine : `backend/.venv/Scripts/python -m uvicorn app.main:app --app-dir backend --reload`. Les dépendances sont décrites dans `pyproject.toml` ; les versions exactes et le verrouillage restent à aligner par l’équipe.
+Lancer depuis la racine : `backend/.venv/Scripts/python -m uvicorn app.main:app --app-dir backend --reload`. Voir [la procédure locale](../docs/console-locale.md) pour les clés, les rôles et les vérifications. Les dépendances sont décrites dans `pyproject.toml` ; les versions exactes et le verrouillage backend restent à aligner par l’équipe.

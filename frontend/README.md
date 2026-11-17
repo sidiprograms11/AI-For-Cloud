@@ -4,8 +4,8 @@ L’interface cible est construite avec React, TypeScript et Vite. Elle utiliser
 
 ## État
 
-Un prototype visuel responsive présente quatre écrans : accueil, saisie du besoin, comparaison et dossier technique. Les boutons de navigation changent seulement l’écran affiché. Les champs sont illustratifs et ne sauvegardent rien. Les exemples et états sont explicitement fictifs. Le client API minimal et l’initialisation conditionnelle du client Supabase restent dans le code pour les développements suivants, mais la maquette ne les appelle pas. Le parcours d’authentification, le questionnaire fonctionnel, le chat, la validation du besoin, les résultats réels et l’export restent à développer.
+`/` présente Kora comme conversation simple. Les messages restent en mémoire dans le navigateur ; la réponse est une **simulation explicite** et ne produit aucune recommandation. `/#/console` présente cinq espaces internes. Le premier utilise Supabase Auth local et l’API FastAPI pour enregistrer des cas, tests et versions. Les quatre autres indiquent « À développer ». Sur le site public statique, la console indique que le backend local n’est pas disponible. Les visuels Kora fournis par l’équipe sont conservés dans `public/brand/`.
 
 ## Développement
 
-Copier le `.env.example` racine vers `.env` à la racine, puis lancer depuis ce dossier `npm install` et `npm run dev`. Le mode Vite lit la configuration racine et n’expose au navigateur que les variables `VITE_`.
+Copier le `.env.example` racine vers `.env` à la racine, ajouter les clés **locales** et lancer `npm.cmd ci` puis `npm.cmd run dev` depuis ce dossier. Vite ne met dans le navigateur que les variables `VITE_`. Voir [le guide de la console](../docs/console-locale.md).
