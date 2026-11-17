@@ -21,4 +21,4 @@ Le dépôt possédait une seule maquette React, un contrôle de santé FastAPI e
 
 La route de la console peut être visible dans le code public ; la protection réside dans l’API et la base. Le rôle `publisher` peut également relire, mais pas sa propre version. Les opérations intermédiaires de test et de relecture enregistrent leur trace séparément ; une garantie transactionnelle complète de ces étapes reste à ajouter si elles deviennent critiques. Le test simulé ne classe aucun fournisseur et ne produit aucun coût.
 
-Avant une mise en ligne fonctionnelle, vérifier la migration et RLS sur Supabase local avec plusieurs comptes, définir les quotas réels et décider de l’hébergement du backend. Voir [la procédure locale](../console-locale.md).
+La migration, les refus Data API et le parcours de cas ont été vérifiés sur Supabase local avec des comptes distincts. Avant une mise en ligne fonctionnelle, définir les quotas réels, compléter les tests de sécurité et décider de l’hébergement du backend. Voir [la procédure locale](../console-locale.md).

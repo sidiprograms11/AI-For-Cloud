@@ -75,16 +75,16 @@ Toutes les routes ci-dessous sont sous `/api/v1/internal` et exigent `Authorizat
 | `POST /cases/{id}/drafts` | membre | Copie la version active dans un nouveau brouillon. |
 | `POST /cases/{id}/versions/{version_id}/rollback` | publication | Réactive une ancienne version publiée. |
 
-## Vérifications à exécuter sur une pile locale disponible
+## Vérifications reproductibles
 
 - Rejouer `supabase db reset` puis vérifier les tables, fonctions et politiques dans Studio.
 - Vérifier `401` sans jeton, `403` avec un compte Auth sans rôle interne, puis les interdictions de relecture/publication selon les rôles.
 - Depuis un client Supabase connecté sans clé privilégiée, vérifier que les tables internes ne sont pas lisibles ni modifiables directement.
 - Faire le parcours complet avec deux comptes distincts et constater que v1 active reste identique pendant la modification de v2.
 
-Ces vérifications nécessitent Docker, Supabase CLI et Python. Elles ne doivent pas être déclarées réussies tant qu’elles n’ont pas été exécutées.
+Le 17 novembre 2026, `supabase db reset` a rejoué les deux migrations sur une pile locale vierge. `python -m unittest discover -s backend/tests -v` a réussi avec **6 tests**, dont un parcours intégré avec trois comptes temporaires (membre, responsable de publication et compte sans rôle). Ce parcours a vérifié les refus 401/403, la création et la récupération du cas, le test simulé, la relecture par une autre personne, la publication, la création d’un nouveau brouillon sans effet sur la version active, puis le retour à l’ancienne version. Les essais Data API ont vérifié qu’un compte Auth normal ne peut ni lire, ni insérer, ni modifier, ni supprimer les cas internes. Les comptes de test et leur cas sont supprimés après l’essai.
 
-Les tests HTTP sans base s’exécutent avec `python -m unittest discover -s backend/tests -v`. Ils couvrent le contrôle de santé, les réponses 401/403, le refus de publication au rôle membre et le refus d’auto-relecture. Ils ne remplacent pas les essais RLS et le parcours intégré.
+Pour refaire ce contrôle, définir `RUN_LOCAL_SUPABASE_TESTS=1`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY` à partir de **la pile locale uniquement**, puis exécuter la commande de tests ci-dessus. Sans `RUN_LOCAL_SUPABASE_TESTS`, le test intégré est ignoré. Le rendu visuel dans un navigateur reste à vérifier manuellement.
 
 ## Limites et suite
 

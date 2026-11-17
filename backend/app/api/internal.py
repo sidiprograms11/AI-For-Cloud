@@ -1,5 +1,6 @@
 """Parcours local de la console. Toutes les opérations passent par le serveur."""
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Annotated
@@ -52,7 +53,20 @@ def _configured_key(value: object) -> str | None:
     return secret
 
 
-def require_member(authorization: Annotated[str | None, Header()] = None) -> MemberContext:
+def _close_client(client: Client) -> None:
+    """Ferme les connexions HTTP du client synchrone."""
+    for owner in (
+        getattr(client, "auth", None),
+        getattr(getattr(client, "postgrest", None), "session", None),
+    ):
+        close = getattr(owner, "close", None)
+        if callable(close):
+            close()
+
+
+def require_member(
+    authorization: Annotated[str | None, Header()] = None,
+) -> Iterator[MemberContext]:
     settings = get_settings()
     public_key = _configured_key(settings.supabase_publishable_key)
     secret_key = _configured_key(settings.supabase_secret_key)
@@ -63,24 +77,36 @@ def require_member(authorization: Annotated[str | None, Header()] = None) -> Mem
     token = authorization.removeprefix("Bearer ").strip()
     if not token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Connexion requise.")
+    public_client = None
     try:
-        user = create_client(settings.supabase_url, public_key).auth.get_user(token).user
+        public_client = create_client(settings.supabase_url, public_key)
+        user = public_client.auth.get_user(token).user
     except Exception:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session invalide.") from None
+    finally:
+        if public_client is not None:
+            _close_client(public_client)
     if user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session invalide.")
+    db = None
     try:
         db = create_client(settings.supabase_url, secret_key)
         rows = (
             db.table("internal_members").select("role").eq("user_id", str(user.id)).execute().data
         )
     except Exception:
+        if db is not None:
+            _close_client(db)
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE, "Données internes indisponibles."
         ) from None
     if not rows or rows[0]["role"] not in ROLE_LEVEL:
+        _close_client(db)
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Accès interne refusé.")
-    return MemberContext(str(user.id), rows[0]["role"], db)
+    try:
+        yield MemberContext(str(user.id), rows[0]["role"], db)
+    finally:
+        _close_client(db)
 
 
 Member = Annotated[MemberContext, Depends(require_member)]

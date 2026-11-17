@@ -17,6 +17,8 @@ Deux interfaces partagent le dépôt :
 
 Le site public `ai-kora.cloud` héberge seulement le frontend statique ; la console fonctionnelle nécessite l’API et Supabase locaux. Le RAG, le LLM réel, les recommandations et les coûts calculés ne sont pas disponibles. Voir [le guide de la console locale](docs/console-locale.md).
 
+Le premier parcours interne a été vérifié le 17 novembre 2026 sur une pile Supabase locale après remise à zéro des migrations ; les 6 tests backend ont réussi. La revue visuelle dans un navigateur reste à faire.
+
 ## Prérequis
 
 - Node.js 22.12 ou supérieur pour Vite.

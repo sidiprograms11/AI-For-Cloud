@@ -2,12 +2,12 @@
 
 Les tâches restent sans dates, durées ni affectations nominatives. L’équipe les priorisera et précisera leurs critères d’acceptation.
 
-## Premier lot préparé, à vérifier sur pile locale
+## Premier lot implémenté et vérifié sur pile locale
 
 - Kora : conversation de démonstration locale au navigateur, avec visuels de marque et limites visibles.
 - Console : accès par Supabase Auth et rôle serveur ; cinq espaces dont un parcours de cas d’entreprise.
 - Cas : création, modification du brouillon, test simulé, relecture distincte, publication atomique et retour à une version précédente.
-- Vérifications bloquantes : migration locale, essais RLS avec deux comptes, contrôle 401/403 et parcours intégré. Voir [la procédure](console-locale.md).
+- Vérifications effectuées : migration locale rejouée, essais Data API avec comptes distincts, contrôle 401/403 et parcours intégré. Voir [la procédure](console-locale.md). La revue du rendu dans un navigateur reste à faire.
 
 ## Brique 1 — Besoins et comparaison
 
