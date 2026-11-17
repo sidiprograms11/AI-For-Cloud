@@ -4,7 +4,7 @@
 
 La console React est accessible à `http://127.0.0.1:5173/#/console` lorsque le frontend, l’API et Supabase local sont lancés. Une connexion Supabase Auth et un rôle dans `internal_members` sont nécessaires. Les cinq espaces sont visibles ; seul **Besoins & clouds** possède un parcours métier. Les quatre autres affichent « À développer ».
 
-Le site public `ai-kora.cloud` reste une publication **statique** de l’interface Kora. Le dialogue y est une simulation locale au navigateur, sans analyse ni enregistrement. L’API FastAPI et Supabase ne sont pas déployés sur ce domaine. La route de la console y explique qu’elle n’est disponible que sur la pile locale.
+Le site public `ai-kora.cloud` reste une publication **statique** de l’interface Kora. Le dialogue y est une simulation locale au navigateur, sans analyse ni enregistrement. L’API FastAPI et Supabase ne sont pas déployés sur ce domaine. La route de la console y explique qu’elle n’est disponible que sur la pile locale. La configuration Vite charge `.env` pour `npm run dev` et désactive explicitement son chargement pour `npm run build`.
 
 ## Démarrage
 
