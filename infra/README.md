@@ -11,4 +11,4 @@ Décrire et, lorsque les choix seront validés, configurer les environnements n�
 
 ## État et travail restant
 
-La configuration Supabase locale est définie dans `supabase/config.toml`. Aucune infrastructure d’hébergement de l’application n’est configurée et aucune ressource cloud n’a été provisionnée. Le fournisseur d’hébergement, les environnements partagés, le réseau, les secrets, la supervision et le déploiement restent à étudier. Le cloud d’hébergement du projet est indépendant des clouds comparés pour les entreprises.
+La pile locale reste définie dans `supabase/config.toml`. Le frontend public est hébergé par Sites ; la console utilise le projet Supabase IA FOR CLOUD et l’Edge Function `console-api`. `console.public.json` contient uniquement l’URL et la clé publishable. `supabase-console/supabase/config.toml` déclare les seules propriétés Auth à appliquer au projet distant. Les scripts Python de ce dossier reçoivent les clés privilégiées via stdin et ne les affichent ni ne les enregistrent. Voir la [procédure](../docs/deploiement-console-supabase.md).

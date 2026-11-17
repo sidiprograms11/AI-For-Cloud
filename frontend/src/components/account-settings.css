@@ -1,0 +1,12 @@
+.account-settings { color: #c5d3ec; font-size: 11px; }
+.account-settings summary { cursor: pointer; }
+.account-settings form { display: grid; gap: 10px; padding-top: 13px; }
+.account-settings label { display: grid; gap: 6px; }
+.account-settings input { width: 100%; min-width: 0; border: 1px solid #52698f; border-radius: 6px; padding: 7px; background: #192c4b; color: white; }
+.account-settings button { border: 1px solid #52698f !important; border-radius: 6px; padding: 8px !important; text-align: center !important; }
+.account-settings p { font-size: 11px; line-height: 1.5; }
+@media (max-width: 790px) {
+  .console-sidebar-bottom { display: flex; flex-direction: row; flex-wrap: wrap; align-items: start; gap: 15px; padding-top: 13px; margin-top: 13px; }
+  .account-settings { flex: 1; min-width: 200px; }
+  .account-settings form { max-width: 300px; }
+}

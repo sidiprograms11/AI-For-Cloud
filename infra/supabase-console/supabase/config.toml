@@ -1,0 +1,8 @@
+# Ce fichier ne décrit que les réglages Auth de la console partagée.
+# La pile locale reste définie dans /supabase/config.toml.
+project_id = "ai-for-cloud-console-shared"
+
+[auth]
+site_url = "https://ai-kora.cloud"
+additional_redirect_urls = ["https://ai-kora.cloud/**", "https://www.ai-kora.cloud/**", "https://kora-ai-for-cloud-prototype.sidigano8.chatgpt.site/**"]
+enable_signup = false

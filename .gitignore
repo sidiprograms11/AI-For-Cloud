@@ -38,6 +38,7 @@ dist/
 
 # Supabase CLI local state
 supabase/.temp/
+**/supabase/.temp/
 supabase/.branches/
 
 # Journaux, temporaires et artefacts locaux
