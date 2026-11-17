@@ -69,6 +69,13 @@ class InternalLocalTests(unittest.TestCase):
         super().tearDownClass()
 
     def request(self, method, path, actor=0, json=None):
+        edge_url = os.getenv("CONSOLE_EDGE_URL")
+        if edge_url:
+            if edge_url != "http://127.0.0.1:54321/functions/v1/console-api":
+                raise RuntimeError("Seule l’Edge Function locale peut être testée.")
+            return httpx.request(method, f"{edge_url}/internal{path}", headers={
+                "Authorization": f"Bearer {self.tokens[actor]}", "apikey": self.public_key,
+            }, json=json, timeout=20)
         return self.client.request(
             method,
             f"/api/v1/internal{path}",

@@ -15,37 +15,37 @@ CASE_ID = "22222222-2222-4222-8222-222222222222"
 VERSION_ID = "33333333-3333-4333-8333-333333333333"
 
 
+class RpcError(Exception):
+    code = "PT403"
+    message = "Accès interne refusé."
+
+
 class FakeQuery:
-    def __init__(self, rows: list[dict]):
-        self.rows = rows
-
-    def select(self, *_args):
-        return self
-
-    def eq(self, *_args):
-        return self
+    def __init__(self, data):
+        self.data = data
 
     def execute(self):
-        return SimpleNamespace(data=self.rows)
+        return SimpleNamespace(data=self.data)
 
 
 class FakeClient:
     def __init__(self, role: str | None):
         self.role = role
         self.auth = self
+        self.postgrest = SimpleNamespace(session=self)
+
+    def close(self):
+        pass
 
     def get_user(self, token: str):
         if token != "valid-token":
             raise ValueError("invalid")
         return SimpleNamespace(user=SimpleNamespace(id=UUID(USER_ID)))
 
-    def table(self, name: str):
-        if name == "internal_members":
-            return FakeQuery([{"role": self.role}] if self.role else [])
-        if name == "internal_case_versions":
-            return FakeQuery([{"id": VERSION_ID, "case_id": CASE_ID,
-                               "state": "in_review", "created_by": USER_ID}])
-        return FakeQuery([])
+    def rpc(self, name, params):
+        if self.role is None or params["p_action"] in ("publish", "approve"):
+            raise RpcError()
+        return FakeQuery({"user_id": USER_ID, "role": self.role})
 
 
 class InternalAccessTests(unittest.TestCase):
@@ -60,8 +60,9 @@ class InternalAccessTests(unittest.TestCase):
     def call(self, path: str, role: str | None, token: str | None = "valid-token", method="get"):
         headers = {"Authorization": f"Bearer {token}"} if token is not None else {}
         fake = FakeClient(role)
-        with patch("app.api.internal.get_settings", return_value=self.settings), patch(
-            "app.api.internal.create_client", return_value=fake
+        with (
+            patch("app.api.internal.get_settings", return_value=self.settings),
+            patch("app.api.internal.create_client", return_value=fake),
         ):
             return getattr(self.client, method)(path, headers=headers)
 

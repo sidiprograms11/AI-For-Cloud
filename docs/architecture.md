@@ -4,6 +4,8 @@ Ce document transforme l’architecture commune fournie par l’équipe en struc
 
 ## Socle retenu
 
+Depuis la décision [0003](decisions/0003-console-hebergee-sur-supabase.md), le parcours de console utilise une API PostgreSQL commune, exposée par FastAPI en local et par une Edge Function TypeScript sur Supabase. La fonction `console_api` contrôle le rôle et l’auteur à partir du JWT utilisateur ; aucun accès privilégié n’est fourni au navigateur. La cible partagée autorisée est `qxgingqrkzzqccsluntb`. Le test reste explicitement simulé.
+
 - **Interface** : React, TypeScript et Vite.
 - **API** : Python et FastAPI, organisée en modules dans un backend unique.
 - **Données** : Supabase et PostgreSQL.
@@ -17,9 +19,9 @@ Le modèle de génération, le modèle d’embeddings, les versions exactes des 
 ## État du premier lot
 
 - L’interface publique React présente un dialogue de démonstration, sans envoi ni sauvegarde. Les logos fournis par l’équipe sont intégrés.
-- La console React à `/#/console` comporte cinq espaces ; seul le parcours des cas est fonctionnel sur la pile locale. Un déploiement frontend statique ne suffit pas à exploiter la console.
+- La console React à `/#/console` comporte cinq espaces ; le parcours des cas fonctionne en local et via l’API Supabase partagée. Les autres espaces restent à développer.
 - FastAPI expose `GET /api/v1/health` et les routes `/api/v1/internal/*`. Chaque route interne vérifie le jeton Supabase Auth et un rôle serveur (`member`, `reviewer`, `publisher`).
-- L’interface et le backend disposent d’un emplacement pour le client Supabase. Aucun accès distant n’est configuré.
+- Le build public utilise `infra/console.public.json` (URL et clé publishable seulement). Le développement conserve `.env` avec les clés de Supabase local.
 - `supabase/config.toml` décrit le développement local ; la migration initiale crée les tables, active RLS, installe pgvector et rend les buckets privés. Une nouvelle migration ajoute les tables de la console, les versions de cas, les résultats de test, une trace d’actions et les fonctions transactionnelles de création/publication.
 - L’adaptateur IA mock renvoie un marqueur de simulation et n’appelle aucun service externe.
 - Les lockfiles et versions exactes restent à aligner collectivement.
@@ -45,7 +47,7 @@ Le parcours utilisateur cible reste : authentification, saisie et clarification,
 
 ## Séparation Kora / console
 
-La route `/#/console` est un choix de navigation simple pour le frontend statique ; **elle n’est pas une barrière de sécurité**. L’API vérifie le jeton et le rôle à chaque opération, puis utilise une clé privilégiée seulement côté serveur. Les tables internes ont RLS activé et aucun accès direct `anon`/`authenticated`. Aucune donnée de conversation privée n’alimente les tests internes.
+La route `/#/console` est un choix de navigation ; elle n’accorde aucun droit. Chaque requête porte le JWT du compte, vérifié par Auth puis transmis à `console_api`. Le rôle et les transitions sont contrôlés dans PostgreSQL. Les tables internes ont RLS activé et aucun accès direct `anon`/`authenticated`. La fonction `security definer` à chemin vide est la seule entrée métier accordée à `authenticated`. Les créations, modifications, tests et publications sont transactionnels. Aucune conversation privée n’alimente les tests internes.
 
 Le type de contenu versionné dans ce premier lot est le **cas d’entreprise**. Les versions ont des états `draft → tested → in_review → reviewed → active`, avec `superseded` pour une ancienne version active. La publication ou le retour à une version antérieure se fait dans une fonction PostgreSQL transactionnelle. Le pointeur vers la version active ne bouge pas lorsqu’un brouillon est édité. Le schéma de ce parcours figure dans [le guide local](console-locale.md).
 

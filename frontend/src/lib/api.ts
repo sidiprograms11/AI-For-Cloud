@@ -7,7 +7,12 @@ export async function internalRequest<T>(path: string, token: string, init: Requ
   if (!apiBaseUrl) throw new Error('API interne indisponible sur cette publication statique.')
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...init.headers },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } : {}),
+      ...init.headers,
+    },
   })
   if (!response.ok) {
     let detail = `Erreur ${response.status}`
