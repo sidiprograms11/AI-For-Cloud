@@ -8,13 +8,15 @@ Le site public `ai-kora.cloud` reste une publication **statique** de l’interfa
 
 ## Démarrage
 
-Prérequis : Node.js 22.12+, Python 3.12+, Docker Desktop démarré et Supabase CLI. Aucun projet Supabase distant n’est lié. Depuis la racine du dépôt :
+Prérequis : Node.js 22.12+, Python 3.12+ et Docker Desktop démarré. La CLI Supabase 3.2.0 a été utilisée via `npx` pour cette vérification locale ; l’équipe pourra choisir ensuite une version verrouillée. Aucun projet Supabase distant n’est lié. Depuis la racine du dépôt :
 
 ```powershell
-supabase start
-supabase db reset
-supabase status -o env
+npx.cmd --yes supabase@3.2.0 start
+npx.cmd --yes supabase@3.2.0 db reset
+npx.cmd --yes supabase@3.2.0 status -o env
 ```
+
+`db reset` recrée la base **locale** et supprime ses données ; l’exécuter seulement sur une pile de test que l’on peut vider. Pour les développements suivants, utiliser les nouvelles migrations sans effacer les données utiles.
 
 Copier `.env.example` vers `.env` puis reporter **uniquement les clés de la pile locale** : la clé `ANON_KEY` (ou publishable locale) dans `VITE_SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_PUBLISHABLE_KEY`, la clé `SERVICE_ROLE_KEY` (ou secret locale) dans `SUPABASE_SECRET_KEY`. Ne jamais préfixer la clé privilégiée par `VITE_`, ni la committer. Conserver les URL locales indiquées dans l’exemple.
 

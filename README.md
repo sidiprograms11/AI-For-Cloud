@@ -46,14 +46,14 @@ Le lockfile frontend est versionné. Les choix de modèles IA et d’hébergemen
    backend/.venv/Scripts/python -m uvicorn app.main:app --app-dir backend --reload
    ```
 
-4. Pour lancer Supabase localement, avec Docker actif :
+4. Pour lancer Supabase localement, avec Docker actif (CLI 3.2.0 utilisée lors de la vérification) :
 
    ```powershell
-   supabase start
-   supabase db reset
+   npx.cmd --yes supabase@3.2.0 start
+   npx.cmd --yes supabase@3.2.0 db reset
    ```
 
-Voir [la procédure détaillée](docs/console-locale.md) pour créer les comptes de test, attribuer les rôles locaux et vérifier le parcours. Aucun appel payant ni accès au projet Supabase hébergé n’est configuré.
+`db reset` efface les données de la base **locale** ; le réserver à une pile de test. La CLI peut aussi être installée séparément par l’équipe. Voir [la procédure détaillée](docs/console-locale.md) pour créer les comptes de test, attribuer les rôles locaux et vérifier le parcours. Aucun appel payant ni accès au projet Supabase hébergé n’est configuré.
 
 ## Structure
 
