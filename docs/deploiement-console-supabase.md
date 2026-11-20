@@ -19,6 +19,8 @@ Pour la mise en service initiale du 17 novembre, le plan comprenait les migratio
 
 ## Lot des cinq ateliers préparé le 20 novembre 2026
 
+La **version Sites 6** (source `d984f3ceb77d7999910a03cb1753d977ea03f625`) a été publiée le 20 novembre à la demande de mise en ligne de la dernière interface. Le déploiement Sites a réussi. **La migration des ateliers et la nouvelle passerelle Edge restent en attente** : le compte CLI `sidigano8@gmail.com` reçoit HTTP 403 sur le projet IA FOR CLOUD. Les nouvelles rubriques sont visibles, mais leur lecture et leurs sauvegardes ne sont pas encore opérationnelles sur le projet partagé. Ne pas présenter ce déploiement du frontend comme une mise en service complète des ateliers. La base et le mot de passe existants n’ont pas été modifiés.
+
 La [décision 0004](decisions/0004-ateliers-connaissances-et-evaluations.md) décrit ce lot autorisé. La migration supplémentaire est `20261117160000_console_workspaces.sql`. Elle ajoute les contributions, instantanés, expériences, évaluations, événements et le RPC `workspace_api`. Les vérifications locales incluent les refus CRUD directs, les rôles distincts, les conflits de révision, les instantanés, l’activation et le retour arrière ; voir [tests/README.md](../tests/README.md).
 
 Avant ce déploiement, la CLI doit montrer IA FOR CLOUD dans les projets du compte actif. Un HTTP 403 sur l’API de gestion est un problème de droits à résoudre ; ne pas changer de cible ni réinitialiser la base pour le contourner. Un diagnostic IPv6 de la CLI ne suffit pas à conclure à une panne DNS : vérifier d’abord le compte et les droits. Ne jamais demander une clé privilégiée dans la conversation.
