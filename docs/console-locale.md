@@ -1,12 +1,12 @@
-# Console interne : premier parcours local
+# Console interne : développement et tests locaux
 
 ## État réel
 
-Ce guide décrit le développement local. La console partagée est désormais raccordée à Supabase selon la [décision 0003](decisions/0003-console-hebergee-sur-supabase.md) et le [guide de déploiement](deploiement-console-supabase.md). Le compte et les clés de développement restent distincts de ceux de l’environnement partagé. FastAPI et l’Edge Function utilisent maintenant la même fonction PostgreSQL `console_api`.
+Ce guide décrit le développement local. La console partagée est raccordée à Supabase selon la [décision 0003](decisions/0003-console-hebergee-sur-supabase.md) et le [guide de déploiement](deploiement-console-supabase.md). Le compte et les clés de développement restent distincts de ceux de l’environnement partagé. FastAPI et l’Edge Function utilisent les mêmes fonctions PostgreSQL `console_api` et `workspace_api`.
 
-La console React est accessible à `http://127.0.0.1:5173/#/console` lorsque le frontend, l’API et Supabase local sont lancés. Une connexion Supabase Auth et un rôle dans `internal_members` sont nécessaires. Les cinq espaces sont visibles ; seul **Besoins & clouds** possède un parcours métier. Les quatre autres affichent « À développer ».
+La console React est accessible à `http://127.0.0.1:5173/#/console` lorsque le frontend, l’API et Supabase local sont lancés. Une connexion Supabase Auth et un rôle dans `internal_members` sont nécessaires. Les cinq espaces proposent des outils persistants. Le [guide des ateliers](console-ateliers.md) décrit l’import de fiches Cloud, les consignes, les exemples, les configurations, le laboratoire, les retours et les évaluations.
 
-Le site public `ai-kora.cloud` reste une publication **statique** de l’interface Kora. Le dialogue y est une simulation locale au navigateur, sans analyse ni enregistrement. L’API FastAPI et Supabase ne sont pas déployés sur ce domaine. La route de la console y explique qu’elle n’est disponible que sur la pile locale. La configuration Vite charge `.env` pour `npm run dev` et désactive explicitement son chargement pour `npm run build`.
+Le site `ai-kora.cloud` héberge un frontend statique : le dialogue public est une simulation dans le navigateur ; la console authentifiée appelle l’Edge Function Supabase distante. FastAPI n’est pas hébergé sur ce domaine. La configuration Vite charge `.env` pour `npm run dev` et désactive explicitement son chargement pour `npm run build` ; le build utilise la configuration publique déclarée dans `infra/console.public.json`.
 
 ## Démarrage
 
@@ -14,11 +14,11 @@ Prérequis : Node.js 22.12+, Python 3.12+ et Docker Desktop démarré. La CLI Su
 
 ```powershell
 npx.cmd --yes supabase@3.2.0 start
-npx.cmd --yes supabase@3.2.0 db reset
+npx.cmd --yes supabase@3.2.0 migration up --local
 npx.cmd --yes supabase@3.2.0 status -o env
 ```
 
-`db reset` recrée la base **locale** et supprime ses données ; l’exécuter seulement sur une pile de test que l’on peut vider. Pour les développements suivants, utiliser les nouvelles migrations sans effacer les données utiles.
+`migration up --local` applique les migrations en attente sans vider les données. Pour vérifier le rejeu complet, `db reset` recrée la base **locale** et supprime ses données ; l’exécuter seulement sur une pile de test que l’on peut vider. Ne pas ajouter `--remote` ou `--linked` aux tests de ce guide.
 
 Copier `.env.example` vers `.env` puis reporter **uniquement les clés de la pile locale** : la clé `ANON_KEY` (ou publishable locale) dans `VITE_SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_PUBLISHABLE_KEY`, la clé `SERVICE_ROLE_KEY` (ou secret locale) dans `SUPABASE_SECRET_KEY`. Ne jamais préfixer la clé privilégiée par `VITE_`, ni la committer. Conserver les URL locales indiquées dans l’exemple.
 
@@ -51,7 +51,7 @@ on conflict (user_id) do update set role = excluded.role;
 
 Ces adresses sont des exemples à remplacer. `member` crée et teste ; `reviewer` peut en plus relire ; `publisher` peut relire, publier et réactiver une ancienne version. Le créateur d’une version ne peut pas valider sa propre relecture. Les rôles sont gérés par SQL local pour ce premier lot ; aucune interface de gestion des membres n’est exposée.
 
-L’API vérifie chaque jeton auprès de Supabase Auth puis cherche le rôle côté serveur. Les tables internes ont RLS activé et aucun droit d’accès direct pour `anon` ou `authenticated`. Seule la clé privilégiée **côté backend** accède à ces tables, après le contrôle de rôle. Une URL de console cachée ou un bouton masqué ne constitue pas une autorisation.
+L’API vérifie chaque jeton auprès de Supabase Auth, puis le RPC contrôle le rôle côté serveur. Les tables internes ont RLS activé et aucun droit d’accès direct pour `anon` ou `authenticated`. Les appels métier utilisent le jeton utilisateur ; les RPC contrôlés sont la seule entrée du navigateur. Une clé privilégiée ne sert qu’aux opérations d’administration côté serveur et aux fixtures locales. Une URL de console cachée ou un bouton masqué ne constitue pas une autorisation.
 
 ## Parcours vérifiable
 
@@ -79,6 +79,20 @@ Toutes les routes ci-dessous sont sous `/api/v1/internal` et exigent `Authorizat
 | `POST /cases/{id}/drafts` | membre | Copie la version active dans un nouveau brouillon. |
 | `POST /cases/{id}/versions/{version_id}/rollback` | publication | Réactive une ancienne version publiée. |
 
+Les ateliers ajoutent les routes suivantes sous le même préfixe. La passerelle Edge expose les mêmes suffixes sous `/functions/v1/console-api/internal`.
+
+| Route | Effet |
+| --- | --- |
+| `GET /workspace` | Vue d’ensemble autorisée, sans charger tous les textes. |
+| `POST /workspace/items`, `GET/PATCH /workspace/items/{id}` | Créer, lire et modifier une contribution avec contrôle de révision. |
+| `POST /workspace/items/{id}/review` ou `/archive` | Relire depuis un autre compte autorisé, ou archiver avec le rôle publisher. |
+| `POST /workspace/search` | Recherche lexicale dans les sources non archivées. |
+| `POST /workspace/releases`, `GET /workspace/releases/{id}` | Créer ou lire un instantané de consignes et sources. |
+| `POST /workspace/releases/{id}/tests` | Enregistrer une recherche et une préparation de contexte simulée. |
+| `POST /workspace/releases/{id}/approve`, `/activate`, `/rollback` | Validation distincte et activation/retour arrière transactionnels. |
+| `GET /workspace/experiments/{id}` | Lire une expérience et ses passages figés. |
+| `POST /workspace/experiments/{id}/evaluations` | Ajouter une évaluation humaine. |
+
 ## Vérifications reproductibles
 
 - Rejouer `supabase db reset` puis vérifier les tables, fonctions et politiques dans Studio.
@@ -86,12 +100,12 @@ Toutes les routes ci-dessous sont sous `/api/v1/internal` et exigent `Authorizat
 - Depuis un client Supabase connecté sans clé privilégiée, vérifier que les tables internes ne sont pas lisibles ni modifiables directement.
 - Faire le parcours complet avec deux comptes distincts et constater que v1 active reste identique pendant la modification de v2.
 
-Le 17 novembre 2026, `supabase db reset` a rejoué les deux migrations sur une pile locale vierge. `python -m unittest discover -s backend/tests -v` a réussi avec **6 tests**, dont un parcours intégré avec trois comptes temporaires (membre, responsable de publication et compte sans rôle). Ce parcours a vérifié les refus 401/403, la création et la récupération du cas, le test simulé, la relecture par une autre personne, la publication, la création d’un nouveau brouillon sans effet sur la version active, puis le retour à l’ancienne version. Les essais Data API ont vérifié qu’un compte Auth normal ne peut ni lire, ni insérer, ni modifier, ni supprimer les cas internes. Les comptes de test et leur cas sont supprimés après l’essai.
+Le parcours des cas a d’abord été vérifié le 17 novembre 2026 après rejeu des migrations sur une pile locale vierge. Le 20 novembre, la migration des ateliers a été appliquée localement et les **7 tests Python** ont réussi, avec création/récupération, tests simulés, relecture distincte, publication, retour arrière et contrat HTTP des ateliers. Les **10 tests Edge** ont réussi. Les scénarios PostgreSQL des ateliers ont vérifié les six types de contribution, les validations d’entrée, les conflits de révision, les instantanés, la recherche, l’évaluation, l’archivage et les refus de lecture/insertion/modification/suppression directes. Les fixtures sont supprimées après les essais.
 
-Pour refaire ce contrôle, définir `RUN_LOCAL_SUPABASE_TESTS=1`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` et `SUPABASE_SECRET_KEY` à partir de **la pile locale uniquement**, puis exécuter la commande de tests ci-dessus. Sans `RUN_LOCAL_SUPABASE_TESTS`, le test intégré est ignoré. Le rendu visuel dans un navigateur reste à vérifier manuellement.
+Pour reproduire les contrôles Python et Node, voir [tests/README.md](../tests/README.md). Sans `RUN_LOCAL_SUPABASE_TESTS=1`, les tests Python intégrés sont ignorés. Le parcours Chrome a aussi été exécuté sur ordinateur et à une largeur mobile de 390 px : import de fichier, sauvegarde et rechargement, recherche, consignes, exemple, configuration, expérience, export Markdown, retour d’interface, évaluation, contrôle et validation depuis un second compte local. Aucun utilisateur ni contenu de test n’est créé sur le projet partagé.
 
 ## Limites et suite
 
-Le dialogue public ne possède ni historique persistant, ni RAG, ni LLM réel. Le test interne ne mesure pas la qualité des recommandations et ne constitue pas une comparaison cloud. La console n’est pas encore hébergée. Les appels privilégiés et les tests n’utilisent que la pile Supabase locale. Avant toute mise en ligne fonctionnelle, prévoir l’hébergement sécurisé de FastAPI et Supabase, des tests RLS à plusieurs comptes, une vraie politique de quotas, des tests d’intégration et la procédure de déploiement explicitement validée par l’équipe.
+Le dialogue public ne possède ni historique persistant, ni RAG, ni LLM réel. Le laboratoire mesure une recherche textuelle et recueille une appréciation humaine ; il ne produit pas une comparaison cloud. Les tests de ce guide n’utilisent que Supabase local. Le déploiement sur IA FOR CLOUD suit une [procédure distincte](deploiement-console-supabase.md), explicitement autorisée pour la console. Les modèles, les budgets, la conservation et le futur backend de conversation restent à décider et à implémenter.
 
 Références d’API utilisées : [vérification du JWT avec `get_user`](https://supabase.com/docs/reference/python/auth-getuser), [retour des lignes modifiées](https://supabase.com/docs/reference/python/update), [fonctions PostgreSQL appelées par RPC](https://supabase.com/docs/reference/python/rpc).

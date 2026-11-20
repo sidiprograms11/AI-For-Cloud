@@ -74,20 +74,21 @@ def call_api(
     version_id: UUID | None = None,
     payload: dict | None = None,
 ) -> Any:
+    return execute_rpc(
+        client,
+        "console_api",
+        {
+            "p_action": action,
+            "p_case_id": str(case_id) if case_id else None,
+            "p_version_id": str(version_id) if version_id else None,
+            "p_payload": payload or {},
+        },
+    )
+
+
+def execute_rpc(client: Client, name: str, params: dict) -> Any:
     try:
-        return (
-            client.rpc(
-                "console_api",
-                {
-                    "p_action": action,
-                    "p_case_id": str(case_id) if case_id else None,
-                    "p_version_id": str(version_id) if version_id else None,
-                    "p_payload": payload or {},
-                },
-            )
-            .execute()
-            .data
-        )
+        return client.rpc(name, params).execute().data
     except Exception as error:
         code = str(getattr(error, "code", ""))
         if code in ("PT401", "PT403", "PT404", "PT409", "PT422", "PT429"):

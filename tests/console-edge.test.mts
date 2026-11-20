@@ -59,3 +59,41 @@ test('aucun diagnostic interne de la base n’est exposé', async () => {
   assert.equal(response.status, 503)
   assert.equal((await response.text()).includes('private connection details'), false)
 })
+
+test('les routes des ateliers n’exposent aucune opération arbitraire', () => {
+  assert.equal(resolveRoute('GET', '/internal/workspace')?.action, 'overview')
+  assert.equal(resolveRoute('POST', '/internal/workspace/sql'), null)
+  assert.equal(resolveRoute('DELETE', '/internal/workspace/items'), null)
+  assert.equal(resolveRoute('GET', '/internal/workspace/items/------------------------------------'), null)
+})
+
+test('les contributions utilisent seulement le RPC workspace_api avec le JWT utilisateur', async () => {
+  let calls = 0
+  const handler = createHandler(environment, (async (input, init) => {
+    calls++
+    if (String(input).endsWith('/auth/v1/user')) return Response.json({ id: 'user' })
+    assert.equal(String(input), environment.url + '/rest/v1/rpc/workspace_api')
+    assert.equal(new Headers(init?.headers).get('authorization'), 'Bearer member-token')
+    const data = JSON.parse(String(init?.body))
+    assert.equal(data.p_action, 'save_item')
+    assert.equal(data.p_id, null)
+    assert.equal(data.p_payload.content.length, 20000)
+    return Response.json({ id: 'saved' })
+  }) as typeof fetch)
+  const response = await handler(new Request('https://example.supabase.co/functions/v1/console-api/internal/workspace/items', {
+    method: 'POST', headers: { authorization: 'Bearer member-token' },
+    body: JSON.stringify({ kind: 'source', content: 'x'.repeat(20000) }),
+  }))
+  assert.equal(response.status, 201)
+  assert.equal(calls, 2)
+})
+
+test('un import trop volumineux est refusé avant le RPC', async () => {
+  let calls = 0
+  const handler = createHandler(environment, (async () => { calls++; return Response.json({ id: 'user' }) }) as typeof fetch)
+  const response = await handler(new Request('https://example.supabase.co/functions/v1/console-api/internal/workspace/items', {
+    method: 'POST', headers: { authorization: 'Bearer token' }, body: JSON.stringify({ content: 'é'.repeat(130000) }),
+  }))
+  assert.equal(response.status, 413)
+  assert.equal(calls, 1)
+})

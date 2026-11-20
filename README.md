@@ -13,11 +13,11 @@ Le modèle de génération, les embeddings, les budgets et la conservation reste
 Deux interfaces partagent le dépôt :
 
 - **Kora** (`/`) : expérience conversationnelle épurée avec les visuels fournis par l’équipe. Les messages et réponses de démonstration restent dans le navigateur. Aucune comparaison, recommandation réelle ou sauvegarde n’est effectuée.
-- **Console interne** (`/#/console`) : cinq espaces. Le premier enregistre des cas, leurs contraintes, des tests simulés et des versions. Une relecture par un autre compte est obligatoire avant publication. Les quatre autres espaces sont marqués « À développer ». L’accès exige un compte Auth et un rôle interne.
+- **Console interne** (`/#/console`) : cinq espaces de travail avec contributions persistantes, bibliothèque Cloud, consignes, exemples attendus, laboratoire, configurations versionnées, restitution, évaluations humaines et contrôles. Le parcours de cas d’entreprise est conservé. L’accès exige un compte Auth et un rôle interne ; une relecture distincte reste obligatoire avant activation.
 
 Le site [ai-kora.cloud](https://ai-kora.cloud) héberge le frontend ; [la console d’équipe](https://ai-kora.cloud/#/console) utilise l’API Supabase. Son premier compte demandé est `sidi.gano@efrei.net`. Le propriétaire définit son mot de passe depuis une première connexion autorisée. Le partage d’un seul compte empêche l’identification des personnes et l’auto-relecture reste interdite. Le RAG, le LLM réel et les coûts calculés restent indisponibles. Voir le [guide de déploiement](docs/deploiement-console-supabase.md) et le [guide local](docs/console-locale.md).
 
-Le premier parcours interne a été vérifié le 17 novembre 2026 sur une pile Supabase locale après remise à zéro des migrations ; les 6 tests backend ont réussi. La revue visuelle dans un navigateur reste à faire.
+Le lot des cinq espaces a été vérifié le 20 novembre 2026 sur Supabase **local** : compilation du frontend, 7 tests Python, 10 tests Edge, scénarios PostgreSQL avec plusieurs comptes et parcours Chrome sur ordinateur et mobile. Les connaissances se recherchent réellement par mots-clés ; aucune réponse LLM ni aucun entraînement de modèle n’est exécuté. Voir le [guide des ateliers](docs/console-ateliers.md), les [tests reproductibles](tests/README.md) et la [décision 0004](docs/decisions/0004-ateliers-connaissances-et-evaluations.md).
 
 ## Prérequis
 

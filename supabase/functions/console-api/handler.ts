@@ -1,8 +1,12 @@
+import { resolveWorkspaceRoute } from './workspace-routes.ts'
+
 type Environment = { url: string; publicKey: string; allowedOrigins: string[] }
 
 const uuid = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
 export function resolveRoute(method: string, path: string) {
+  const workspace = resolveWorkspaceRoute(method, path)
+  if (workspace) return { ...workspace, workspace: true }
   if (method === 'GET' && path === '/internal/me') return { action: 'me' }
   if (path === '/internal/cases') {
     if (method === 'GET') return { action: 'list' }
@@ -44,16 +48,21 @@ export function createHandler(env: Environment, requestFetch: typeof fetch = fet
       if (!authResponse.ok) return json({ detail: authResponse.status >= 500 ? 'Service d’identité indisponible.' : 'Session invalide.' }, authResponse.status >= 500 ? 503 : 401)
       let payload: unknown = {}
       if (request.method !== 'GET') {
-        if (Number(request.headers.get('content-length')) > 16000) return json({ detail: 'Données trop volumineuses.' }, 413)
+        const maxBytes = 'workspace' in route ? 250000 : 16000
+        if (Number(request.headers.get('content-length')) > maxBytes) return json({ detail: 'Données trop volumineuses.' }, 413)
         const text = await request.text()
-        if (new TextEncoder().encode(text).length > 16000) return json({ detail: 'Données trop volumineuses.' }, 413)
+        if (new TextEncoder().encode(text).length > maxBytes) return json({ detail: 'Données trop volumineuses.' }, 413)
         try { payload = text ? JSON.parse(text) : {} } catch { return json({ detail: 'JSON invalide.' }, 422) }
         if (!payload || Array.isArray(payload) || typeof payload !== 'object') return json({ detail: 'Objet JSON attendu.' }, 422)
       }
-      const response = await requestFetch(`${env.url}/rest/v1/rpc/console_api`, {
+      const workspace = 'workspace' in route
+      const rpcBody = workspace
+        ? { p_action: route.action, p_id: 'resourceId' in route ? route.resourceId : null, p_payload: payload }
+        : { p_action: route.action, p_case_id: 'caseId' in route ? route.caseId : null, p_version_id: 'versionId' in route ? route.versionId : null, p_payload: payload }
+      const response = await requestFetch(`${env.url}/rest/v1/rpc/${workspace ? 'workspace_api' : 'console_api'}`, {
         method: 'POST',
         headers: { apikey: env.publicKey, Authorization: auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_action: route.action, p_case_id: route.caseId ?? null, p_version_id: route.versionId ?? null, p_payload: payload }),
+        body: JSON.stringify(rpcBody),
         signal: AbortSignal.timeout(15000),
       })
       if (!response.ok) {
@@ -62,7 +71,7 @@ export function createHandler(env: Environment, requestFetch: typeof fetch = fet
         return json({ detail: status === 503 ? 'Données internes indisponibles.' : error.message, request_id: requestId }, status)
       }
       const data = await response.json()
-      return json(data, ['create', 'draft', 'test'].includes(route.action) ? 201 : 200)
+      return json(data, ['create', 'draft', 'test', 'prepare_release', 'run_experiment', 'evaluate'].includes(route.action) || (route.action === 'save_item' && request.method === 'POST') ? 201 : 200)
     } catch {
       return json({ detail: 'Service temporairement indisponible.', request_id: requestId }, 503)
     }

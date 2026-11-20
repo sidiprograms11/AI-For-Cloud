@@ -15,7 +15,15 @@ npx.cmd --yes supabase@3.2.0 migration list --remote=qxgingqrkzzqccsluntb
 npx.cmd --yes supabase@3.2.0 db push --remote=qxgingqrkzzqccsluntb --dry-run --skip-vault
 ```
 
-Le plan attendu comprend les migrations `20261113000000`, `20261117000000` et `20261117140000`, sans seed ni rôle SQL global ajouté. Si l’état distant diffère, examiner les différences avant de poursuivre.
+Pour la mise en service initiale du 17 novembre, le plan comprenait les migrations `20261113000000`, `20261117000000` et `20261117140000`, sans seed ni rôle SQL global ajouté. Elles sont désormais appliquées : ne pas les rejouer ni les modifier.
+
+## Lot des cinq ateliers préparé le 20 novembre 2026
+
+La [décision 0004](decisions/0004-ateliers-connaissances-et-evaluations.md) décrit ce lot autorisé. La migration supplémentaire est `20261117160000_console_workspaces.sql`. Elle ajoute les contributions, instantanés, expériences, évaluations, événements et le RPC `workspace_api`. Les vérifications locales incluent les refus CRUD directs, les rôles distincts, les conflits de révision, les instantanés, l’activation et le retour arrière ; voir [tests/README.md](../tests/README.md).
+
+Avant ce déploiement, la CLI doit montrer IA FOR CLOUD dans les projets du compte actif. Un HTTP 403 sur l’API de gestion est un problème de droits à résoudre ; ne pas changer de cible ni réinitialiser la base pour le contourner. Un diagnostic IPv6 de la CLI ne suffit pas à conclure à une panne DNS : vérifier d’abord le compte et les droits. Ne jamais demander une clé privilégiée dans la conversation.
+
+L’historique attendu contient les trois migrations initiales. Le plan à blanc doit annoncer **uniquement** `20261117160000_console_workspaces.sql`. Si une autre migration apparaît, examiner l’écart avant d’appliquer. Appliquer la migration, déployer `console-api`, vérifier les routes d’atelier, puis publier le frontend avec Sites. Le formulaire de connexion et le mot de passe existant sont conservés. Le [guide d’utilisation](console-ateliers.md) précise les fonctionnalités et les limites du mode simulé.
 
 ## Mise en service
 

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
-import InternalConsole from './Console'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import PublicKora from './PublicKora'
+
+const InternalConsole = lazy(() => import('./Console'))
 
 function isConsoleRoute() {
   const hash = window.location.hash
@@ -14,5 +15,5 @@ export default function App() {
     window.addEventListener('hashchange', update)
     return () => window.removeEventListener('hashchange', update)
   }, [])
-  return consoleRoute ? <InternalConsole /> : <PublicKora />
+  return consoleRoute ? <Suspense fallback={<div className="loading-page">Chargement de la console…</div>}><InternalConsole /></Suspense> : <PublicKora />
 }

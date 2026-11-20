@@ -73,9 +73,16 @@ class InternalLocalTests(unittest.TestCase):
         if edge_url:
             if edge_url != "http://127.0.0.1:54321/functions/v1/console-api":
                 raise RuntimeError("Seule l’Edge Function locale peut être testée.")
-            return httpx.request(method, f"{edge_url}/internal{path}", headers={
-                "Authorization": f"Bearer {self.tokens[actor]}", "apikey": self.public_key,
-            }, json=json, timeout=20)
+            return httpx.request(
+                method,
+                f"{edge_url}/internal{path}",
+                headers={
+                    "Authorization": f"Bearer {self.tokens[actor]}",
+                    "apikey": self.public_key,
+                },
+                json=json,
+                timeout=20,
+            )
         return self.client.request(
             method,
             f"/api/v1/internal{path}",
@@ -196,6 +203,28 @@ class InternalLocalTests(unittest.TestCase):
         rolled_back = self.request("POST", f"{path}/rollback", actor=1)
         self.assertEqual(rolled_back.status_code, 200, rolled_back.text)
         self.assertEqual(rolled_back.json()["active_version_id"], v1["id"])
+
+    def test_workspace_http_contract(self):
+        overview = self.request("GET", "/workspace")
+        self.assertEqual(overview.status_code, 200, overview.text)
+        self.assertIn("items", overview.json())
+        self.assertEqual(self.request("GET", "/workspace", actor=2).status_code, 403)
+        invalid = self.request("POST", "/workspace/items", json={"kind": "source"})
+        self.assertEqual(invalid.status_code, 422, invalid.text)
+        search = self.request("POST", "/workspace/search", json={"query": "stockage objet"})
+        self.assertEqual(search.status_code, 200, search.text)
+        self.assertIsInstance(search.json(), list)
+        self.assertEqual(self.request("GET", f"/workspace/items/{uuid4()}").status_code, 404)
+        self.assertEqual(self.request("POST", "/workspace/sql").status_code, 404)
+        cors = self.client.options(
+            "/api/v1/internal/workspace",
+            headers={
+                "Origin": "http://127.0.0.1:5173",
+                "Access-Control-Request-Method": "GET",
+                "Access-Control-Request-Headers": "authorization,apikey,content-type",
+            },
+        )
+        self.assertEqual(cors.status_code, 200, cors.text)
 
 
 if __name__ == "__main__":

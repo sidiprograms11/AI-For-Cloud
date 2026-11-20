@@ -4,7 +4,7 @@ Ce document transforme l’architecture commune fournie par l’équipe en struc
 
 ## Socle retenu
 
-Depuis la décision [0003](decisions/0003-console-hebergee-sur-supabase.md), le parcours de console utilise une API PostgreSQL commune, exposée par FastAPI en local et par une Edge Function TypeScript sur Supabase. La fonction `console_api` contrôle le rôle et l’auteur à partir du JWT utilisateur ; aucun accès privilégié n’est fourni au navigateur. La cible partagée autorisée est `qxgingqrkzzqccsluntb`. Le test reste explicitement simulé.
+Depuis la décision [0003](decisions/0003-console-hebergee-sur-supabase.md), la console utilise une API PostgreSQL commune, exposée par FastAPI en local et par une Edge Function TypeScript sur Supabase. Les fonctions `console_api` (cas) et `workspace_api` (ateliers) contrôlent le rôle et l’auteur à partir du JWT utilisateur ; aucun accès privilégié n’est fourni au navigateur. La cible partagée autorisée est `qxgingqrkzzqccsluntb`. La recherche textuelle est réelle ; la génération reste explicitement simulée.
 
 - **Interface** : React, TypeScript et Vite.
 - **API** : Python et FastAPI, organisée en modules dans un backend unique.
@@ -16,13 +16,13 @@ Depuis la décision [0003](decisions/0003-console-hebergee-sur-supabase.md), le 
 
 Le modèle de génération, le modèle d’embeddings, les versions exactes des outils, la dimension des vecteurs, les budgets et le fournisseur d’hébergement restent à décider. Le projet Supabase hébergé visible dans les paramètres de l’équipe est dans la région `eu-west-1`; la configuration locale du dépôt n’est pas liée à ce projet.
 
-## État du premier lot
+## État des parcours implémentés
 
 - L’interface publique React présente un dialogue de démonstration, sans envoi ni sauvegarde. Les logos fournis par l’équipe sont intégrés.
-- La console React à `/#/console` comporte cinq espaces ; le parcours des cas fonctionne en local et via l’API Supabase partagée. Les autres espaces restent à développer.
+- La console React à `/#/console` comporte cinq espaces : Cloud & besoins, IA & consignes, Backend & versions, Interface & restitution, Qualité & livraison. Les ateliers enregistrent des contributions, des configurations figées, des expériences et des évaluations humaines. Le [guide des ateliers](console-ateliers.md) décrit les parcours ; la [décision 0004](decisions/0004-ateliers-connaissances-et-evaluations.md) en fixe les limites.
 - FastAPI expose `GET /api/v1/health` et les routes `/api/v1/internal/*`. Chaque route interne vérifie le jeton Supabase Auth et un rôle serveur (`member`, `reviewer`, `publisher`).
 - Le build public utilise `infra/console.public.json` (URL et clé publishable seulement). Le développement conserve `.env` avec les clés de Supabase local.
-- `supabase/config.toml` décrit le développement local ; la migration initiale crée les tables, active RLS, installe pgvector et rend les buckets privés. Une nouvelle migration ajoute les tables de la console, les versions de cas, les résultats de test, une trace d’actions et les fonctions transactionnelles de création/publication.
+- `supabase/config.toml` décrit le développement local ; la migration initiale crée les tables, active RLS, installe pgvector et rend les buckets privés. Des migrations supplémentaires créent les cas, les ateliers, leurs historiques et les fonctions transactionnelles. Les migrations déjà appliquées restent immuables.
 - L’adaptateur IA mock renvoie un marqueur de simulation et n’appelle aucun service externe.
 - Les lockfiles et versions exactes restent à aligner collectivement.
 
@@ -43,13 +43,19 @@ Navigateur React
 
 GitHub et Antigravity font partie de l’environnement de développement ; ils ne traitent pas les messages des utilisateurs. Le backend reste un service modulaire unique. Un worker ne sera ajouté que si un traitement long le justifie.
 
-Le parcours utilisateur cible reste : authentification, saisie et clarification, correction du besoin, recherche documentaire, comparaison AWS/Azure/Google Cloud, génération contrôlée, validation et restitution/export. Le premier lot interne ne constitue pas cette recommandation : il enregistre des cas et des tests marqués comme simulations. La configuration des critères, les sources et les modèles réels restent à développer.
+Le parcours utilisateur cible reste : authentification, saisie et clarification, correction du besoin, recherche documentaire, comparaison AWS/Azure/Google Cloud, génération contrôlée, validation et restitution/export. La console prépare ces éléments : fiches, critères, consignes et exemples sont enregistrés, mais aucun moteur de comparaison ni modèle réel ne les exécute encore. Une configuration interne active ne raccorde pas automatiquement le dialogue public.
 
 ## Séparation Kora / console
 
-La route `/#/console` est un choix de navigation ; elle n’accorde aucun droit. Chaque requête porte le JWT du compte, vérifié par Auth puis transmis à `console_api`. Le rôle et les transitions sont contrôlés dans PostgreSQL. Les tables internes ont RLS activé et aucun accès direct `anon`/`authenticated`. La fonction `security definer` à chemin vide est la seule entrée métier accordée à `authenticated`. Les créations, modifications, tests et publications sont transactionnels. Aucune conversation privée n’alimente les tests internes.
+La route `/#/console` est un choix de navigation ; elle n’accorde aucun droit. Chaque requête porte le JWT du compte, vérifié par Auth puis transmis au RPC approprié. Le rôle et les transitions sont contrôlés dans PostgreSQL. Les tables internes ont RLS activé et aucun accès direct `anon`/`authenticated`. Seuls les RPC métier `security definer`, à chemin vide et avec contrôle d’identité/rôle, sont accordés à `authenticated`. Les créations, modifications, tests et publications sont transactionnels. Aucune conversation privée n’alimente les tests internes.
 
-Le type de contenu versionné dans ce premier lot est le **cas d’entreprise**. Les versions ont des états `draft → tested → in_review → reviewed → active`, avec `superseded` pour une ancienne version active. La publication ou le retour à une version antérieure se fait dans une fonction PostgreSQL transactionnelle. Le pointeur vers la version active ne bouge pas lorsqu’un brouillon est édité. Le schéma de ce parcours figure dans [le guide local](console-locale.md).
+Les **cas d’entreprise** conservent les états `draft → tested → in_review → reviewed → active`, avec `superseded` pour une ancienne version active. Leur cycle reste indépendant de celui des ateliers.
+
+Les **contributions d’atelier** (`workspace_items`) sont typées : source, critère, consigne, exemple attendu, retour d’interface ou contrôle. Chaque sauvegarde crée une révision et une copie dans `workspace_item_history`. Une modification concurrente portant une ancienne révision est refusée. La provenance est obligatoire pour une source et une référence officielle déclarée exige une URL ; cela ne vaut pas vérification automatique du document.
+
+Une **configuration candidate** (`workspace_releases`) copie une consigne et de 1 à 20 sources dans un instantané immuable. Son cycle est `draft → tested → reviewed → active`, puis `superseded`. `workspace_active_configuration` désigne la version interne active. Les expériences enregistrées dans `workspace_experiments` conservent la question, les passages retrouvés, leurs révisions, les consignes et la durée SQL observée. Les notes humaines et les actions sont conservées dans `workspace_evaluations` et `workspace_events`. Aucune métrique LLM n’est fabriquée : tokens et coût restent nuls au sens SQL (`null`, valeur inconnue).
+
+La recherche utilise le texte français de PostgreSQL (`tsvector`, index GIN et `websearch_to_tsquery`). Le laboratoire recherche dans les sources de l’instantané, sans embeddings ni appel LLM. Les tables `sources` et `chunks` du socle restent réservées au futur corpus validé/vectorisé ; une fiche de préparation ne les alimente pas automatiquement. Les imports texte restent des données non fiables. La validation et l’activation exigent les droits serveur et une relecture distincte ; l’activation et le retour arrière verrouillent le pointeur en transaction.
 
 ## Contrats API visés
 
@@ -92,7 +98,7 @@ Les dimensions d’embeddings et l’index vectoriel seront définis après le c
 - Le frontend ne reçoit que des variables `VITE_` et une clé publishable. Une clé `SUPABASE_SECRET_KEY` ne doit jamais être préfixée par `VITE_`.
 - Les documents importés par le futur RAG sont des données non fiables et ne peuvent pas modifier les instructions du système.
 
-La validation complète des jetons JWT, les clients Supabase par requête, les liens temporaires Storage, les essais RLS avec deux comptes et les limites atomiques de budget restent à implémenter et à vérifier avant tout usage réel.
+Les jetons et les rôles sont vérifiés par les routes internes, avec des essais locaux à plusieurs comptes et des refus d’accès direct aux tables pour les quatre opérations CRUD. Les liens temporaires Storage, les règles d’accès du futur dialogue, sa conservation et les limites atomiques de budget restent à implémenter avant un usage IA réel.
 
 ## Références
 
