@@ -19,7 +19,7 @@ Pour la mise en service initiale du 17 novembre, le plan comprenait les migratio
 
 ## Lot des cinq ateliers préparé le 20 novembre 2026
 
-La **version Sites 6** (source `d984f3ceb77d7999910a03cb1753d977ea03f625`) a été publiée le 20 novembre à la demande de mise en ligne de la dernière interface. Le déploiement Sites a réussi. **La migration des ateliers et la nouvelle passerelle Edge restent en attente** : le compte CLI `sidigano8@gmail.com` reçoit HTTP 403 sur le projet IA FOR CLOUD. Les nouvelles rubriques sont visibles, mais leur lecture et leurs sauvegardes ne sont pas encore opérationnelles sur le projet partagé. Ne pas présenter ce déploiement du frontend comme une mise en service complète des ateliers. La base et le mot de passe existants n’ont pas été modifiés.
+La **version Sites 6** (source `d984f3ceb77d7999910a03cb1753d977ea03f625`) a été publiée le 20 novembre à la demande de mise en ligne de la dernière interface. Le déploiement Sites a réussi. À cette date, la migration des ateliers et la nouvelle passerelle Edge attendaient encore des droits d'accès : le compte CLI `sidigano8@gmail.com` recevait HTTP 403 sur IA FOR CLOUD. Le propriétaire les a ensuite appliquées manuellement le 24 novembre, selon le suivi ci-dessous. Aucun mot de passe existant n'a été modifié par les scripts fournis.
 
 La [décision 0004](decisions/0004-ateliers-connaissances-et-evaluations.md) décrit ce lot autorisé. La migration supplémentaire est `20261117160000_console_workspaces.sql`. Elle ajoute les contributions, instantanés, expériences, évaluations, événements et le RPC `workspace_api`. Les vérifications locales incluent les refus CRUD directs, les rôles distincts, les conflits de révision, les instantanés, l’activation et le retour arrière ; voir [tests/README.md](../tests/README.md).
 
@@ -27,7 +27,13 @@ Avant ce déploiement, la CLI doit montrer IA FOR CLOUD dans les projets du comp
 
 L’historique attendu contient les trois migrations initiales. Le plan à blanc doit annoncer **uniquement** `20261117160000_console_workspaces.sql`. Si une autre migration apparaît, examiner l’écart avant d’appliquer. Appliquer la migration, déployer `console-api`, vérifier les routes d’atelier, puis publier le frontend avec Sites. Le formulaire de connexion et le mot de passe existant sont conservés. Le [guide d’utilisation](console-ateliers.md) précise les fonctionnalités et les limites du mode simulé.
 
-À la demande du 24 novembre, une [procédure SQL Editor et Dashboard](../infra/supabase-console/dashboard/README.md) fournit les scripts complets à exécuter manuellement : contrôle préalable, application transactionnelle de cette même migration avec son historique, contrôle PostgreSQL et fichier API autonome pour `console-api`. Cette variante ne réécrit pas la migration et ne modifie pas les comptes ou mots de passe. Son SQL et le fichier API ont été vérifiés en local ; son exécution distante reste à faire par le propriétaire.
+À la demande du 24 novembre, une [procédure SQL Editor et Dashboard](../infra/supabase-console/dashboard/README.md) fournit les scripts complets à exécuter manuellement : contrôle préalable, application transactionnelle de cette même migration avec son historique, contrôle PostgreSQL et fichier API autonome pour `console-api`. Cette variante ne réécrit pas la migration et ne modifie pas les comptes ou mots de passe. Son SQL et le fichier API ont été vérifiés en local avant leur transmission.
+
+## Suivi du déploiement manuel du 24 novembre 2026
+
+Les captures du propriétaire dans **IA FOR CLOUD** montrent le résultat `Migration 20261117160000 appliquée et enregistrée.`, puis un appel réussi à `workspace_api('overview')` avec les capacités du mode simulé. Une capture suivante montre `Successfully updated edge function` pour `console-api`, avec le fichier autonome fourni dans son `index.ts`. Ces preuves proviennent du Dashboard du propriétaire ; l'assistant n'a pas exécuté de migration distante ni inspecté toutes les lignes de contrôle SQL.
+
+Après cette mise à jour, les vérifications HTTP de l'assistant sur `/functions/v1/console-api/internal/workspace` ont obtenu : **OPTIONS 204** avec `Access-Control-Allow-Origin: https://ai-kora.cloud`, puis **GET 401** sans session. Elles confirment le démarrage de l'API, CORS et le refus anonyme ; elles ne vérifient pas une sauvegarde authentifiée. Le test à effectuer par le propriétaire reste la création d'une fiche Cloud depuis la console, suivie d'un rechargement, puis les parcours des consignes/configurations/expériences. Le modèle reste simulé.
 
 ## Mise en service
 

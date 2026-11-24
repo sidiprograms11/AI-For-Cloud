@@ -46,4 +46,6 @@ Depuis la racine : `py -3.13 infra/prepare_console_dashboard.py`. Pour vérifier
 
 Le 24 novembre 2026, les trois scripts ont été exécutés avec succès, dans leur ordre, sur une base jetable locale préparée à partir du schéma Supabase et de trois migrations initiales. Le contrôle a vérifié les sept tables, RLS, les privilèges et le RPC au nom d'un compte de fixture. Le rejeu et la présence d'objets sans historique ont été refusés sans suppression. Les dix tests existants de la passerelle ont également réussi contre le fichier Dashboard généré, avec un préchargement Node simulant uniquement le démarrage Deno. Le projet hébergé n'a pas été modifié par ces vérifications.
 
+Le propriétaire a ensuite partagé les captures de réussite de la migration, du RPC de contrôle et de la mise à jour de `console-api` dans IA FOR CLOUD. Les contrôles HTTP distants de l'assistant ont confirmé OPTIONS 204 avec l'origine Kora autorisée et GET 401 sans session. La sauvegarde authentifiée dans le navigateur reste à tester selon l'étape 5 ; elle n'est pas prouvée par ces seuls contrôles.
+
 Références : [historique des migrations](https://supabase.com/docs/guides/deployment/database-migrations), [modification d'une Edge Function dans le Dashboard](https://supabase.com/docs/guides/functions/quickstart-dashboard).
