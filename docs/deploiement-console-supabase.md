@@ -27,6 +27,8 @@ Avant ce déploiement, la CLI doit montrer IA FOR CLOUD dans les projets du comp
 
 L’historique attendu contient les trois migrations initiales. Le plan à blanc doit annoncer **uniquement** `20261117160000_console_workspaces.sql`. Si une autre migration apparaît, examiner l’écart avant d’appliquer. Appliquer la migration, déployer `console-api`, vérifier les routes d’atelier, puis publier le frontend avec Sites. Le formulaire de connexion et le mot de passe existant sont conservés. Le [guide d’utilisation](console-ateliers.md) précise les fonctionnalités et les limites du mode simulé.
 
+À la demande du 24 novembre, une [procédure SQL Editor et Dashboard](../infra/supabase-console/dashboard/README.md) fournit les scripts complets à exécuter manuellement : contrôle préalable, application transactionnelle de cette même migration avec son historique, contrôle PostgreSQL et fichier API autonome pour `console-api`. Cette variante ne réécrit pas la migration et ne modifie pas les comptes ou mots de passe. Son SQL et le fichier API ont été vérifiés en local ; son exécution distante reste à faire par le propriétaire.
+
 ## Mise en service
 
 ```powershell
